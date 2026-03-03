@@ -1,27 +1,28 @@
-import { useNetwork } from '@vueuse/core'
-import { computed } from 'vue'
+import { useNetwork, useIntervalFn } from '@vueuse/core'
+import { ref, computed } from 'vue'
 
-export function useSafeNetwork() {
+export function useSafeNetwork(checkInterval = 2000) {
   const network = useNetwork()
 
-  const isOnline = computed(() => network.isOnline.value ?? false)
-  const downlink = computed(() => network.downlink.value ?? 0)
-  const rtt = computed(() => network.rtt.value ?? 0)
-  const effectiveType = computed(() => network.effectiveType.value ?? 'unknown')
+  const isOnline = ref(true)
+  const downlink = ref(0)
+  const rtt = ref(0)
+  const effectiveType = ref('unknown')
+  const saveData = ref(false)
+  const isSlow = ref(false)
 
-  const isSlow = computed(() => {
-    return (
+  useIntervalFn(() => {
+    isOnline.value = network.isOnline.value ?? false
+    downlink.value = network.downlink.value ?? 0
+    rtt.value = network.rtt.value ?? 0
+    effectiveType.value = network.effectiveType.value ?? 'unknown'
+    saveData.value = network.saveData.value ?? false
+
+    isSlow.value =
       downlink.value < 1 ||
       effectiveType.value === '2g' ||
       effectiveType.value === 'slow-2g'
-    )
-  })
+  }, checkInterval)
 
-  return {
-    isOnline,
-    downlink,
-    rtt,
-    effectiveType,
-    isSlow,
-  }
+  return { isOnline, downlink, rtt, effectiveType, saveData, isSlow }
 }
