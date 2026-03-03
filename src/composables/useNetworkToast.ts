@@ -1,11 +1,11 @@
-import { useNetwork } from '@vueuse/core'
-import { computed, watch, ref } from 'vue'
+import { useNetwork, useIntervalFn } from '@vueuse/core'
+import { ref, computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
 
-export function useNetworkToast(minSpeed = 1.5) {
+export function useNetworkToast(minSpeed = 1.5, checkInterval = 3000) {
   const network = useNetwork()
   const toast = useToast()
-  
+
   const hasShownOffline = ref(false)
   const hasShownSlow = ref(false)
   const hasShownBack = ref(false)
@@ -14,9 +14,10 @@ export function useNetworkToast(minSpeed = 1.5) {
   const downlink = computed(() => network.downlink.value ?? 0)
   const isSlow = computed(() => isOnline.value && downlink.value < minSpeed)
 
-  // 1️⃣ Offline toast
-  watch(isOnline, (online) => {
-    if (!online && !hasShownOffline.value) {
+  // Use VueUse interval to check every `checkInterval` ms
+  useIntervalFn(() => {
+    // Offline check
+    if (!isOnline.value && !hasShownOffline.value) {
       toast.add({
         severity: 'error',
         summary: 'No Internet',
@@ -27,24 +28,20 @@ export function useNetworkToast(minSpeed = 1.5) {
       hasShownBack.value = false
     }
 
-    if (online) {
+    // Online again
+    if (isOnline.value && !isSlow.value && !hasShownBack.value) {
+      toast.add({
+        severity: 'success',
+        summary: 'Online',
+        detail: 'Your internet is back to normal.',
+        life: 4000
+      })
       hasShownOffline.value = false
-      // 3️⃣ show back online toast if speed is good
-      if (!isSlow.value && !hasShownBack.value) {
-        toast.add({
-          severity: 'success',
-          summary: 'Online',
-          detail: 'Your internet is back to normal.',
-          life: 4000
-        })
-        hasShownBack.value = true
-      }
+      hasShownBack.value = true
     }
-  })
 
-  // 2️⃣ Slow internet toast
-  watch(isSlow, (slow) => {
-    if (slow && !hasShownSlow.value) {
+    // Slow internet check
+    if (isSlow.value && !hasShownSlow.value) {
       toast.add({
         severity: 'warn',
         summary: 'Slow Internet',
@@ -55,17 +52,19 @@ export function useNetworkToast(minSpeed = 1.5) {
       hasShownBack.value = false
     }
 
-    if (!slow && isOnline.value && !hasShownBack.value) {
+    // Speed back to normal
+    if (!isSlow.value && isOnline.value && !hasShownBack.value) {
       toast.add({
         severity: 'success',
-        summary: 'Internet is fast',
-        detail: 'Your connection speed is back to normal.',
+        summary: 'Internet fast',
+        detail: 'Connection speed is back to normal.',
         life: 4000
       })
       hasShownSlow.value = false
       hasShownBack.value = true
     }
-  })
+
+  }, checkInterval) // check every 2000ms (2s) by default
 
   return { isOnline, downlink, isSlow }
 }

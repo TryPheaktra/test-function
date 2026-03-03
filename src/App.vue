@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useNetwork } from '@vueuse/core'
+import { useNetwork , useInterval} from '@vueuse/core'
 import { useNetworkToast } from './composables/useNetworkToast';
-import { onMounted, watch } from 'vue';
+// import { onMounted, watch } from 'vue';
 
 const { 
   isOnline, 
@@ -10,10 +10,11 @@ const {
   rtt, 
   saveData 
 } = useNetwork()
-onMounted(() => {
-  useNetworkToast(1.5) // minimum speed threshold in Mb/s
-})
+// onMounted(() => {
+//   useNetworkToast(1.5) // minimum speed threshold in Mb/s
+// })
 
+useNetworkToast(1.5, 3000)
 // watch(isOnline, (newStatus) => {
 //   console.log(`Network status changed: ${newStatus ? 'Online' : 'Offline'}`);
 //   useNetworkToast(1.5) // re-evaluate on status change
