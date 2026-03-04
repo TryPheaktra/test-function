@@ -1,7 +1,7 @@
 import { useNetwork, useIntervalFn } from '@vueuse/core'
 import { ref, computed } from 'vue'
 
-export function useSafeNetwork(checkInterval = 2000) {
+export function useSafeNetwork(checkInterval = 1000) {
   const network = useNetwork()
 
   const isOnline = ref(true)

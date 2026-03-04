@@ -2,7 +2,7 @@ import { useNetwork, useIntervalFn } from '@vueuse/core'
 import { ref, computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
 
-export function useNetworkToast(minSpeed = 1.5, checkInterval = 3000) {
+export function useNetworkToast(minSpeed = 1.5, checkInterval = 1000) {
   const network = useNetwork()
   const toast = useToast()
 
