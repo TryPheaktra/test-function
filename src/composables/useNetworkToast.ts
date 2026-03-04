@@ -1,8 +1,8 @@
 import { useNetwork, useIntervalFn } from '@vueuse/core'
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
 
-export function useNetworkToast(minSpeed = 1.5) {
+export function useNetworkToast(minSpeed = 1.5, checkInterval = 3000) {
   const network = useNetwork()
   const toast = useToast()
 
@@ -15,7 +15,7 @@ export function useNetworkToast(minSpeed = 1.5) {
   const isSlow = computed(() => isOnline.value && downlink.value < minSpeed)
 
   // Use VueUse interval to check every `checkInterval` ms
-  watch([isOnline, downlink, isSlow], () => {
+  useIntervalFn(() => {
     // Offline check
     if (!isOnline.value && !hasShownOffline.value) {
       toast.add({
@@ -64,7 +64,7 @@ export function useNetworkToast(minSpeed = 1.5) {
       hasShownBack.value = true
     }
 
-  })
+  }, checkInterval) // check every 2000ms (2s) by default
 
   return { isOnline, downlink, isSlow }
 }

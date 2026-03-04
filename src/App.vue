@@ -16,7 +16,7 @@ const { isOnline, downlink, rtt, effectiveType, saveData } = useSafeNetwork(1000
 //   useNetworkToast(1.5) // minimum speed threshold in Mb/s
 // })
 
-useNetworkToast(1.5)
+useNetworkToast(1.5, 1000)
 // watch(isOnline, (newStatus) => {
 //   console.log(`Network status changed: ${newStatus ? 'Online' : 'Offline'}`);
 //   useNetworkToast(1.5) // re-evaluate on status change
