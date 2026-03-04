@@ -5,6 +5,20 @@
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vite App</title>
+    <script>
+      const slowTimeout = setTimeout(() => {
+        document.getElementById("slow-warning").style.display = "block";
+        document.getElementById("retry-btn").style.display = "inline-block";
+      }, 4000); // 4 seconds threshold
+
+      window.addEventListener("load", () => {
+        clearTimeout(slowTimeout);
+      });
+
+      document.getElementById("retry-btn").onclick = () => {
+        location.reload();
+      };
+    </script>
   </head>
   <body>
     <div id="app">
@@ -19,18 +33,7 @@
       </div>
     </div>
     <script type="module" src="/src/main.ts">
-      const slowTimeout = setTimeout(() => {
-        document.getElementById("slow-warning").style.display = "block";
-        document.getElementById("retry-btn").style.display = "inline-block";
-      }, 4000); // 4 seconds threshold
-
-      window.addEventListener("load", () => {
-        clearTimeout(slowTimeout);
-      });
-
-      document.getElementById("retry-btn").onclick = () => {
-        location.reload();
-      };
+      
     </script>
   </body>
 </html>

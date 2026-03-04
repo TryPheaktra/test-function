@@ -1,70 +1,76 @@
 import { useNetwork, useIntervalFn } from '@vueuse/core'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
 
-export function useNetworkToast(minSpeed = 1.5, checkInterval = 3000) {
+type NetworkState = 'online' | 'slow' | 'offline'
+
+export function useNetworkToast(
+  minSpeed = 1,        // Mb/s threshold
+  maxRtt = 800,        // ms threshold
+  interval = 3000      // check every 3 seconds
+) {
   const network = useNetwork()
   const toast = useToast()
 
-  const hasShownOffline = ref(false)
-  const hasShownSlow = ref(false)
-  const hasShownBack = ref(false)
-
   const isOnline = computed(() => network.isOnline.value ?? false)
   const downlink = computed(() => network.downlink.value ?? 0)
-  const isSlow = computed(() => isOnline.value && downlink.value < minSpeed)
+  const rtt = computed(() => network.rtt.value ?? 0)
 
-  // Use VueUse interval to check every `checkInterval` ms
+  const isSlow = computed(() => {
+    return (
+      isOnline.value &&
+      (
+        downlink.value < minSpeed ||
+        rtt.value > maxRtt
+      )
+    )
+  })
+
+  let currentState: NetworkState = 'online'
+
   useIntervalFn(() => {
-    // Offline check
-    if (!isOnline.value && !hasShownOffline.value) {
+
+    // OFFLINE
+    if (!isOnline.value && currentState !== 'offline') {
       toast.add({
         severity: 'error',
         summary: 'No Internet',
         detail: 'Your internet connection is offline.',
         life: 4000
       })
-      hasShownOffline.value = true
-      hasShownBack.value = false
+      currentState = 'offline'
+      return
     }
 
-    // Online again
-    if (isOnline.value && !isSlow.value && !hasShownBack.value) {
-      toast.add({
-        severity: 'success',
-        summary: 'Online',
-        detail: 'Your internet is back to normal.',
-        life: 4000
-      })
-      hasShownOffline.value = false
-      hasShownBack.value = true
-    }
-
-    // Slow internet check
-    if (isSlow.value && !hasShownSlow.value) {
+    // SLOW
+    if (isSlow.value && currentState !== 'slow') {
       toast.add({
         severity: 'warn',
         summary: 'Slow Internet',
-        detail: `Your speed is ${downlink.value} Mb/s. Saving may take longer.`,
+        detail: `Speed: ${downlink.value} Mb/s | RTT: ${rtt.value} ms`,
         life: 4000
       })
-      hasShownSlow.value = true
-      hasShownBack.value = false
+      currentState = 'slow'
+      return
     }
 
-    // Speed back to normal
-    if (!isSlow.value && isOnline.value && !hasShownBack.value) {
+    // BACK TO NORMAL
+    if (isOnline.value && !isSlow.value && currentState !== 'online') {
       toast.add({
         severity: 'success',
-        summary: 'Internet fast',
-        detail: 'Connection speed is back to normal.',
+        summary: 'Internet Restored',
+        detail: 'Your connection is back to normal.',
         life: 4000
       })
-      hasShownSlow.value = false
-      hasShownBack.value = true
+      currentState = 'online'
     }
 
-  }, checkInterval) // check every 2000ms (2s) by default
+  }, interval)
 
-  return { isOnline, downlink, isSlow }
+  return {
+    isOnline,
+    downlink,
+    rtt,
+    isSlow
+  }
 }
