@@ -11,12 +11,12 @@ import { useSafeNetwork } from './composables/useSafeNetwork';
 //   rtt, 
 //   saveData 
 // } = useNetwork()
-const { isOnline, downlink, rtt, effectiveType, saveData } = useSafeNetwork(500)
+const { isOnline, downlink, rtt, effectiveType, saveData } = useSafeNetwork(1000)
 // onMounted(() => {
 //   useNetworkToast(1.5) // minimum speed threshold in Mb/s
 // })
 
-useNetworkToast(0.1, 500)
+useNetworkToast(1.5)
 // watch(isOnline, (newStatus) => {
 //   console.log(`Network status changed: ${newStatus ? 'Online' : 'Offline'}`);
 //   useNetworkToast(1.5) // re-evaluate on status change

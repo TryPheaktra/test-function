@@ -7,7 +7,30 @@
     <title>Vite App</title>
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <div id="app">
+      <div id="app">
+        <div id="initial-loader">
+          <p>Loading application...</p>
+          <p id="slow-warning" style="display:none; color:red;">
+            ⚠️ Your connection is very slow.
+          </p>
+          <button id="retry-btn" style="display:none;">Retry</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts">
+      const slowTimeout = setTimeout(() => {
+        document.getElementById("slow-warning").style.display = "block";
+        document.getElementById("retry-btn").style.display = "inline-block";
+      }, 4000); // 4 seconds threshold
+
+      window.addEventListener("load", () => {
+        clearTimeout(slowTimeout);
+      });
+
+      document.getElementById("retry-btn").onclick = () => {
+        location.reload();
+      };
+    </script>
   </body>
 </html>
