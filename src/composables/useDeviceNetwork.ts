@@ -1,14 +1,17 @@
-import { ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 
-export function useDeviceNetwork(BASE_URL: string) {
-  const isOnline = ref(true)
-  const rtt = ref(0)
-  const downlink = ref(0)
-  const networkState = ref('online')
+// Define network states
+export type NetworkState = 'online' | 'slow' | 'offline'
 
-  // Ping Test
-  const measureRTT = async () => {
+export function useDeviceNetwork(BASE_URL: string) {
+  const isOnline: Ref<boolean> = ref(true)
+  const rtt: Ref<number> = ref(0)
+  const downlink: Ref<number> = ref(0)
+  const networkState: Ref<NetworkState> = ref('online')
+
+  // Ping Test → RTT
+  const measureRTT = async (): Promise<void> => {
     try {
       const start = performance.now()
       await fetch(`${BASE_URL}/ping?${Date.now()}`, { cache: 'no-store' })
@@ -20,8 +23,8 @@ export function useDeviceNetwork(BASE_URL: string) {
     }
   }
 
-  // Download Speed Test
-  const measureDownlink = async () => {
+  // Download Speed Test → downlink in Mb/s
+  const measureDownlink = async (): Promise<void> => {
     try {
       const start = performance.now()
       const res = await fetch(`${BASE_URL}/speed-test?${Date.now()}`)
@@ -34,19 +37,19 @@ export function useDeviceNetwork(BASE_URL: string) {
     }
   }
 
-  // Determine state
-  const updateNetworkState = () => {
+  // Determine network state
+  const updateNetworkState = (): void => {
     if (!isOnline.value) networkState.value = 'offline'
     else if (rtt.value > 500 || downlink.value < 1) networkState.value = 'slow'
     else networkState.value = 'online'
   }
 
-  // Run interval
+  // Run every 5 seconds
   useIntervalFn(async () => {
     await measureRTT()
     await measureDownlink()
     updateNetworkState()
-  }, 5000) // every 5s
+  }, 5000)
 
   return { isOnline, rtt, downlink, networkState }
 }
