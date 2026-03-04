@@ -12,7 +12,6 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AdminLayout: typeof import('./src/components/AdminLayout.vue')['default']
-    Button: typeof import('primevue/button')['default']
     HeavyChart: typeof import('./src/components/HeavyChart.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     IconCommunity: typeof import('./src/components/icons/IconCommunity.vue')['default']
